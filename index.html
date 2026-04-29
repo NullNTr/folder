@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Photo Save</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            color: #eee;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 30px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.8rem;
+            background: linear-gradient(90deg, #ff00cc, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: #151515;
+            color: #ddd;
+            border: 1px solid #333;
+            padding: 12px 22px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: bold;
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn:hover {
+            border-color: #00ffff;
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #ff00cc, #00ffff);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.18);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .drop-zone {
+            border: 3px dashed #555;
+            border-radius: 16px;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+            background-color: #111;
+            cursor: pointer;
+        }
+
+        .drop-zone.dragover {
+            border-color: #00ffff;
+            background-color: #1a1a1a;
+            transform: scale(1.02);
+        }
+
+        .drop-zone h2 {
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .drop-zone p {
+            color: #999;
+        }
+
+        .info-box {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 14px;
+            padding: 18px;
+            color: #aaa;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            margin: 10px 0 18px;
+            font-size: 1.4rem;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .photo-card {
+            background-color: #111;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.45);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            border: 1px solid #1f1f1f;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
+        }
+
+        .photo-card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            display: block;
+            background: #000;
+        }
+
+        .photo-info {
+            padding: 12px 14px 14px;
+        }
+
+        .photo-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #f3f3f3;
+            margin-bottom: 6px;
+            word-break: break-all;
+        }
+
+        .photo-date {
+            font-size: 0.8rem;
+            color: #777;
+            margin-bottom: 12px;
+        }
+
+        .photo-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .save-btn,
+        .delete-btn {
+            flex: 1;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: bold;
+            transition: 0.2s ease;
+        }
+
+        .save-btn {
+            background: linear-gradient(45deg, #ff00cc, #00ffff);
+            color: white;
+        }
+
+        .save-btn:hover {
+            filter: brightness(1.08);
+        }
+
+        .delete-btn {
+            background: #242424;
+            color: #ddd;
+            border: 1px solid #333;
+        }
+
+        .delete-btn:hover {
+            background: #341818;
+            border-color: #7a2d2d;
+            color: #fff;
+        }
+
+        .empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #666;
+            padding: 60px 20px;
+            font-size: 1.05rem;
+            background: #111;
+            border-radius: 14px;
+            border: 1px solid #222;
+        }
+
+        .stats {
+            color: #999;
+            margin-bottom: 14px;
+            font-size: 0.95rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            color: #444;
+            line-height: 1.8;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        @media (max-width: 1100px) {
+            .gallery {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 780px) {
+            .gallery {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+
+            .photo-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Photo Save</h1>
+        <p class="subtitle">写真をドラッグ＆ドロップして、ブラウザに保存しよう</p>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="uploadTab">アップロード</button>
+            <button class="tab-btn" data-tab="savedTab">写真保存一覧</button>
+        </div>
+
+        <div id="uploadTab" class="tab-content active">
+            <div class="drop-zone" id="dropZone">
+                <h2>📸 ここに写真をドラッグ＆ドロップ</h2>
+                <p>またはクリックしてフォルダーから選択</p>
+            </div>
+
+            <div class="info-box">
+                写真はブラウザ内に保存されます。<br />
+                ページを閉じても保存されたまま残ります。
+            </div>
+        </div>
+
+        <div id="savedTab" class="tab-content">
+            <h2 class="section-title">保存した写真</h2>
+            <div class="stats" id="photoCount">0件の写真</div>
+            <div class="gallery" id="gallery"></div>
+        </div>
+
+        <input type="file" id="fileInput" multiple accept="image/*" />
+
+        <div class="footer">
+            保存方式: IndexedDB（ブラウザ内保存）<br />
+            ※ ブラウザのデータ削除をすると写真も消えます
+        </div>
+    </div>
+
+    <script>
+        const gallery = document.getElementById('gallery');
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const photoCount = document.getElementById('photoCount');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        let photos = [];
+        let db = null;
+
+        // ----------------------------
+        // タブ切り替え
+        // ----------------------------
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const target = button.dataset.tab;
+
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(tab => tab.classList.remove('active'));
+
+                button.classList.add('active');
+                document.getElementById(target).classList.add('active');
+            });
+        });
+
+        // ----------------------------
+        // IndexedDB 初期化
+        // ----------------------------
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('MyPhotoSaveDB', 1);
+
+                request.onupgradeneeded = function (event) {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains('photos')) {
+                        const store = database.createObjectStore('photos', { keyPath: 'id' });
+                        store.createIndex('createdAt', 'createdAt', { unique: false });
+                    }
+                };
+
+                request.onsuccess = function () {
+                    db = request.result;
+                    resolve(db);
+                };
+
+                request.onerror = function () {
+                    reject(request.error);
+                };
+            });
+        }
+
+        function savePhotoToDB(photo) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['photos'], 'readwrite');
+                const store = transaction.objectStore('photos');
+                const request = store.put(photo);
+
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function getAllPhotosFromDB() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['photos'], 'readonly');
+                const store = transaction.objectStore('photos');
+                const request = store.getAll();
+
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function deletePhotoFromDB(id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['photos'], 'readwrite');
+                const store = transaction.objectStore('photos');
+                const request = store.delete(id);
+
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // ----------------------------
+        // ドラッグ&ドロップ
+        // ----------------------------
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            await handleFiles(e.dataTransfer.files);
+        });
+
+        // クリックでファイル選択
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            await handleFiles(e.target.files);
+            fileInput.value = '';
+        });
+
+        // ----------------------------
+        // ファイル処理
+        // ----------------------------
+        async function handleFiles(files) {
+            const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+            if (imageFiles.length === 0) return;
+
+            for (const file of imageFiles) {
+                const dataUrl = await readFileAsDataURL(file);
+
+                const photoData = {
+                    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+                    name: file.name,
+                    dataUrl: dataUrl,
+                    date: new Date().toLocaleString('ja-JP'),
+                    createdAt: Date.now()
+                };
+
+                photos.unshift(photoData);
+                await savePhotoToDB(photoData);
+            }
+
+            renderGallery();
+        }
+
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => resolve(event.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ----------------------------
+        // ギャラリー表示
+        // ----------------------------
+        function renderGallery() {
+            gallery.innerHTML = '';
+            photoCount.textContent = `${photos.length}件の写真`;
+
+            if (photos.length === 0) {
+                gallery.innerHTML = `
+                    <div class="empty">
+                        まだ写真が保存されていません<br />
+                        「アップロード」タブから写真を追加してください
+                    </div>
+                `;
+                return;
+            }
+
+            photos.forEach(photo => {
+                const card = document.createElement('div');
+                card.className = 'photo-card';
+
+                const img = document.createElement('img');
+                img.src = photo.dataUrl;
+                img.alt = photo.name;
+
+                const info = document.createElement('div');
+                info.className = 'photo-info';
+
+                const name = document.createElement('div');
+                name.className = 'photo-name';
+                name.textContent = photo.name;
+
+                const date = document.createElement('div');
+                date.className = 'photo-date';
+                date.textContent = photo.date;
+
+                const actions = document.createElement('div');
+                actions.className = 'photo-actions';
+
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'save-btn';
+                downloadBtn.textContent = '保存';
+                downloadBtn.addEventListener('click', () => downloadPhoto(photo.id));
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = '削除';
+                deleteBtn.addEventListener('click', () => removePhoto(photo.id));
+
+                actions.appendChild(downloadBtn);
+                actions.appendChild(deleteBtn);
+
+                info.appendChild(name);
+                info.appendChild(date);
+                info.appendChild(actions);
+
+                card.appendChild(img);
+                card.appendChild(info);
+
+                gallery.appendChild(card);
+            });
+        }
+
+        // ----------------------------
+        // ダウンロード
+        // ----------------------------
+        function downloadPhoto(id) {
+            const photo = photos.find(p => p.id === id);
+            if (!photo) return;
+
+            const link = document.createElement('a');
+            link.href = photo.dataUrl;
+            link.download = photo.name || `photo_${Date.now()}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // ----------------------------
+        // 削除
+        // ----------------------------
+        async function removePhoto(id) {
+            const ok = confirm('この写真を削除しますか？');
+            if (!ok) return;
+
+            photos = photos.filter(photo => photo.id !== id);
+            await deletePhotoFromDB(id);
+            renderGallery();
+        }
+
+        // ----------------------------
+        // 初期ロード
+        // ----------------------------
+        async function init() {
+            try {
+                await openDB();
+                photos = await getAllPhotosFromDB();
+                photos.sort((a, b) => b.createdAt - a.createdAt);
+                renderGallery();
+            } catch (error) {
+                console.error('初期化エラー:', error);
+                gallery.innerHTML = `
+                    <div class="empty">
+                        保存データの読み込みに失敗しました
+                    </div>
+                `;
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
