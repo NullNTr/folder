@@ -22,6 +22,7 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            position: relative;
         }
 
         h1 {
@@ -37,6 +38,202 @@
             text-align: center;
             color: #888;
             margin-bottom: 30px;
+        }
+
+        /* 左上メニューボタン */
+        .menu-btn {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            z-index: 1200;
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            border: 1px solid #333;
+            background: rgba(20, 20, 20, 0.95);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+            transition: all 0.25s ease;
+        }
+
+        .menu-btn:hover {
+            border-color: #00ffff;
+            transform: scale(1.04);
+        }
+
+        .menu-icon {
+            width: 22px;
+            height: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .menu-icon span {
+            display: block;
+            height: 2.5px;
+            width: 100%;
+            border-radius: 99px;
+            background: #fff;
+        }
+
+        /* オーバーレイ */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1100;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.25s ease;
+        }
+
+        .overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* サイドバー */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: min(380px, 90vw);
+            height: 100vh;
+            background: #111;
+            border-right: 1px solid #222;
+            z-index: 1150;
+            transform: translateX(-100%);
+            transition: transform 0.28s ease;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            padding: 20px 18px 16px;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: #1b1b1b;
+            border: 1px solid #333;
+            color: #fff;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-body {
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .deleted-count {
+            color: #999;
+            font-size: 0.92rem;
+            margin-bottom: 14px;
+        }
+
+        .deleted-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .deleted-item {
+            display: flex;
+            gap: 10px;
+            background: #171717;
+            border: 1px solid #232323;
+            border-radius: 14px;
+            padding: 10px;
+            align-items: center;
+        }
+
+        .deleted-item img {
+            width: 72px;
+            height: 72px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #000;
+            flex-shrink: 0;
+        }
+
+        .deleted-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .deleted-name {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #f2f2f2;
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+
+        .deleted-date {
+            color: #777;
+            font-size: 0.78rem;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .deleted-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .restore-btn,
+        .permanent-delete-btn {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: bold;
+        }
+
+        .restore-btn {
+            background: linear-gradient(45deg, #00c853, #00e5ff);
+            color: white;
+        }
+
+        .permanent-delete-btn {
+            background: #2a1515;
+            color: #ffb3b3;
+            border: 1px solid #5b2a2a;
+        }
+
+        .empty-deleted {
+            color: #666;
+            text-align: center;
+            padding: 40px 10px;
+            background: #151515;
+            border: 1px solid #222;
+            border-radius: 14px;
+            line-height: 1.8;
         }
 
         .tabs {
@@ -268,10 +465,43 @@
             .photo-actions {
                 flex-direction: column;
             }
+
+            .deleted-item {
+                align-items: flex-start;
+            }
+
+            .deleted-item img {
+                width: 64px;
+                height: 64px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 左上3本線 -->
+    <button class="menu-btn" id="menuBtn" aria-label="メニューを開く">
+        <div class="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </button>
+
+    <!-- 背景オーバーレイ -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- サイドメニュー -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">削除した写真</div>
+            <button class="close-btn" id="closeSidebarBtn">✕</button>
+        </div>
+        <div class="sidebar-body">
+            <div class="deleted-count" id="deletedCount">0件</div>
+            <div class="deleted-list" id="deletedList"></div>
+        </div>
+    </aside>
+
     <div class="container">
         <h1>My Photo Save</h1>
         <p class="subtitle">写真をドラッグ＆ドロップして、ブラウザに保存しよう</p>
@@ -315,6 +545,13 @@
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
 
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+        const deletedList = document.getElementById('deletedList');
+        const deletedCount = document.getElementById('deletedCount');
+
         let photos = [];
         let db = null;
 
@@ -334,6 +571,23 @@
         });
 
         // ----------------------------
+        // サイドバー
+        // ----------------------------
+        function openSidebar() {
+            sidebar.classList.add('open');
+            overlay.classList.add('show');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        }
+
+        menuBtn.addEventListener('click', openSidebar);
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar);
+
+        // ----------------------------
         // IndexedDB 初期化
         // ----------------------------
         function openDB() {
@@ -345,6 +599,7 @@
                     if (!database.objectStoreNames.contains('photos')) {
                         const store = database.createObjectStore('photos', { keyPath: 'id' });
                         store.createIndex('createdAt', 'createdAt', { unique: false });
+                        store.createIndex('deleted', 'deleted', { unique: false });
                     }
                 };
 
@@ -410,7 +665,6 @@
             await handleFiles(e.dataTransfer.files);
         });
 
-        // クリックでファイル選択
         dropZone.addEventListener('click', () => {
             fileInput.click();
         });
@@ -435,14 +689,16 @@
                     name: file.name,
                     dataUrl: dataUrl,
                     date: new Date().toLocaleString('ja-JP'),
-                    createdAt: Date.now()
+                    createdAt: Date.now(),
+                    deleted: false,
+                    deletedAt: null
                 };
 
                 photos.unshift(photoData);
                 await savePhotoToDB(photoData);
             }
 
-            renderGallery();
+            renderAll();
         }
 
         function readFileAsDataURL(file) {
@@ -455,13 +711,26 @@
         }
 
         // ----------------------------
-        // ギャラリー表示
+        // 表示
         // ----------------------------
-        function renderGallery() {
-            gallery.innerHTML = '';
-            photoCount.textContent = `${photos.length}件の写真`;
+        function getActivePhotos() {
+            return photos
+                .filter(photo => !photo.deleted)
+                .sort((a, b) => b.createdAt - a.createdAt);
+        }
 
-            if (photos.length === 0) {
+        function getDeletedPhotos() {
+            return photos
+                .filter(photo => photo.deleted)
+                .sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+        }
+
+        function renderGallery() {
+            const activePhotos = getActivePhotos();
+            gallery.innerHTML = '';
+            photoCount.textContent = `${activePhotos.length}件の写真`;
+
+            if (activePhotos.length === 0) {
                 gallery.innerHTML = `
                     <div class="empty">
                         まだ写真が保存されていません<br />
@@ -471,7 +740,7 @@
                 return;
             }
 
-            photos.forEach(photo => {
+            activePhotos.forEach(photo => {
                 const card = document.createElement('div');
                 card.className = 'photo-card';
 
@@ -501,7 +770,7 @@
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-btn';
                 deleteBtn.textContent = '削除';
-                deleteBtn.addEventListener('click', () => removePhoto(photo.id));
+                deleteBtn.addEventListener('click', () => moveToDeleted(photo.id));
 
                 actions.appendChild(downloadBtn);
                 actions.appendChild(deleteBtn);
@@ -515,6 +784,75 @@
 
                 gallery.appendChild(card);
             });
+        }
+
+        function renderDeletedPhotos() {
+            const deletedPhotos = getDeletedPhotos();
+            deletedCount.textContent = `${deletedPhotos.length}件`;
+
+            deletedList.innerHTML = '';
+
+            if (deletedPhotos.length === 0) {
+                deletedList.innerHTML = `
+                    <div class="empty-deleted">
+                        削除した写真はありません
+                    </div>
+                `;
+                return;
+            }
+
+            deletedPhotos.forEach(photo => {
+                const item = document.createElement('div');
+                item.className = 'deleted-item';
+
+                const img = document.createElement('img');
+                img.src = photo.dataUrl;
+                img.alt = photo.name;
+
+                const info = document.createElement('div');
+                info.className = 'deleted-info';
+
+                const name = document.createElement('div');
+                name.className = 'deleted-name';
+                name.textContent = photo.name;
+
+                const date = document.createElement('div');
+                date.className = 'deleted-date';
+                date.innerHTML = `
+                    追加: ${photo.date}<br>
+                    削除: ${photo.deletedAt ? new Date(photo.deletedAt).toLocaleString('ja-JP') : '-'}
+                `;
+
+                const actions = document.createElement('div');
+                actions.className = 'deleted-actions';
+
+                const restoreBtn = document.createElement('button');
+                restoreBtn.className = 'restore-btn';
+                restoreBtn.textContent = '復元';
+                restoreBtn.addEventListener('click', () => restorePhoto(photo.id));
+
+                const permanentDeleteBtn = document.createElement('button');
+                permanentDeleteBtn.className = 'permanent-delete-btn';
+                permanentDeleteBtn.textContent = '完全削除';
+                permanentDeleteBtn.addEventListener('click', () => permanentlyDeletePhoto(photo.id));
+
+                actions.appendChild(restoreBtn);
+                actions.appendChild(permanentDeleteBtn);
+
+                info.appendChild(name);
+                info.appendChild(date);
+                info.appendChild(actions);
+
+                item.appendChild(img);
+                item.appendChild(info);
+
+                deletedList.appendChild(item);
+            });
+        }
+
+        function renderAll() {
+            renderGallery();
+            renderDeletedPhotos();
         }
 
         // ----------------------------
@@ -533,15 +871,49 @@
         }
 
         // ----------------------------
-        // 削除
+        // 削除済みに移動
         // ----------------------------
-        async function removePhoto(id) {
-            const ok = confirm('この写真を削除しますか？');
+        async function moveToDeleted(id) {
+            const photo = photos.find(p => p.id === id);
+            if (!photo) return;
+
+            const ok = confirm('この写真を削除済みに移動しますか？');
             if (!ok) return;
 
-            photos = photos.filter(photo => photo.id !== id);
+            photo.deleted = true;
+            photo.deletedAt = Date.now();
+
+            await savePhotoToDB(photo);
+            renderAll();
+        }
+
+        // ----------------------------
+        // 復元
+        // ----------------------------
+        async function restorePhoto(id) {
+            const photo = photos.find(p => p.id === id);
+            if (!photo) return;
+
+            photo.deleted = false;
+            photo.deletedAt = null;
+
+            await savePhotoToDB(photo);
+            renderAll();
+        }
+
+        // ----------------------------
+        // 完全削除
+        // ----------------------------
+        async function permanentlyDeletePhoto(id) {
+            const photo = photos.find(p => p.id === id);
+            if (!photo) return;
+
+            const ok = confirm('この写真を完全に削除しますか？');
+            if (!ok) return;
+
+            photos = photos.filter(p => p.id !== id);
             await deletePhotoFromDB(id);
-            renderGallery();
+            renderAll();
         }
 
         // ----------------------------
@@ -551,8 +923,14 @@
             try {
                 await openDB();
                 photos = await getAllPhotosFromDB();
-                photos.sort((a, b) => b.createdAt - a.createdAt);
-                renderGallery();
+
+                photos = photos.map(photo => ({
+                    ...photo,
+                    deleted: photo.deleted ?? false,
+                    deletedAt: photo.deletedAt ?? null
+                }));
+
+                renderAll();
             } catch (error) {
                 console.error('初期化エラー:', error);
                 gallery.innerHTML = `
