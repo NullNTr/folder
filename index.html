@@ -46,8 +46,8 @@
             top: 18px;
             left: 18px;
             z-index: 1200;
-            width: 52px;
-            height: 52px;
+            width: 48px;
+            height: 48px;
             border-radius: 14px;
             border: 1px solid #333;
             background: rgba(20, 20, 20, 0.95);
@@ -573,17 +573,17 @@
         // ----------------------------
         // サイドバー
         // ----------------------------
-        function openSidebar() {
-            sidebar.classList.add('open');
-            overlay.classList.add('show');
-        }
+function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('show');
+    menuBtn.classList.add('hidden'); // ←追加
+}
 
-        function closeSidebar() {
-            sidebar.classList.remove('open');
-            overlay.classList.remove('show');
-        }
-
-        menuBtn.addEventListener('click', openSidebar);
+function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+    menuBtn.classList.remove('hidden'); // ←追加
+}
         closeSidebarBtn.addEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
 
