@@ -573,17 +573,17 @@
         // ----------------------------
         // サイドバー
         // ----------------------------
-function openSidebar() {
-    sidebar.classList.add('open');
-    overlay.classList.add('show');
-    menuBtn.classList.add('hidden'); // ←追加
-}
+        function openSidebar() {
+            sidebar.classList.add('open');
+            overlay.classList.add('show');
+        }
 
-function closeSidebar() {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('show');
-    menuBtn.classList.remove('hidden'); // ←追加
-}
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        }
+
+        menuBtn.addEventListener('click', openSidebar);
         closeSidebarBtn.addEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
 
